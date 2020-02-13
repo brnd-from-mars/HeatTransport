@@ -6,9 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# input
-from numpy.core.multiarray import ndarray
-
 conductivity = 100.0                # [W/(m*K)]
 specific_heat_capacity = 1000.0     # [J/(kg*K)]
 depth = 0.1                         # [m]
@@ -16,10 +13,10 @@ size_of_block_height = 2.5          # [m]
 size_of_block_width = 5.0           # [m]
 number_of_cells_height = 30         # [#]
 number_of_cells_width = 60          # [#]
-temp_left = 100.0                   # [deg C]
-temp_right = 100.0                  # [deg C]
-temp_bottom = 0.0                   # [deg C]
-temp_top = 0.0                      # [deg C]
+temp_left = 373.0                   # [K]
+temp_right = 373.0                  # [K]
+temp_bottom = 273.0                 # [K]
+temp_top = 273.0                    # [K]
 heat_source_per_volume = 1000.0     # [W/m^3]
 velocity_x = -0.5                   # [m/s]
 velocity_y = 1.0                    # [m/s]
