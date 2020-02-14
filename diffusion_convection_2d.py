@@ -13,10 +13,10 @@ size_of_block_height = 2.5          # [m]
 size_of_block_width = 5.0           # [m]
 number_of_cells_height = 30         # [#]
 number_of_cells_width = 60          # [#]
-temp_left = 373.0                   # [K]
-temp_right = 373.0                  # [K]
-temp_bottom = 273.0                 # [K]
-temp_top = 273.0                    # [K]
+temp_west = 373.0                   # [K]
+temp_east = 373.0                   # [K]
+temp_south = 273.0                  # [K]
+temp_north = 273.0                  # [K]
 heat_source_per_volume = 1000.0     # [W/m^3]
 velocity_x = -0.5                   # [m/s]
 velocity_y = 1.0                    # [m/s]
@@ -30,7 +30,7 @@ def cell_to_index(_i, _j):
     return _j * number_of_cells_width + _i
 
 
-# lengths / volumes in the mesh ([m] and [m^3])
+# lengths / areas / volumes in the mesh ([m] / [m^2] / [m^3])
 
 x_faces_tmp = np.linspace(0, size_of_block_width, number_of_cells_width + 1)
 x_faces = np.tile(x_faces_tmp, number_of_cells_height).reshape(number_of_cells_height, number_of_cells_width + 1)
@@ -73,78 +73,78 @@ y_DA = np.multiply(y_area, np.divide(conductivity, d_centroids_y))
 
 x_F = density * specific_heat_capacity * np.multiply(velocity_at_face_x, x_area)
 y_F = density * specific_heat_capacity * np.multiply(velocity_at_face_y, y_area)
-x_Fl = np.copy(x_F[:, 0:-1])
-x_Fr = np.copy(x_F[:, 1:])
-y_Fb = np.copy(y_F[0:-1, :])
-y_Ft = np.copy(y_F[1:, :])
-x_Flmax = np.maximum(x_Fl, np.zeros(x_Fl.shape))
-x_Frmax = np.maximum(-1 * x_Fr, np.zeros(x_Fr.shape))
-y_Fbmax = np.maximum(y_Fb, np.zeros(y_Fb.shape))
-y_Ftmax = np.maximum(-1 * y_Ft, np.zeros(y_Ft.shape))
+x_Fw = np.copy(x_F[:, 0:-1])
+x_Fe = np.copy(x_F[:, 1:])
+y_Fs = np.copy(y_F[0:-1, :])
+y_Fn = np.copy(y_F[1:, :])
+x_Fwmax = np.maximum(x_Fw, np.zeros(x_Fw.shape))
+x_Femax = np.maximum(-1 * x_Fe, np.zeros(x_Fe.shape))
+y_Fsmax = np.maximum(y_Fs, np.zeros(y_Fs.shape))
+y_Fnmax = np.maximum(-1 * y_Fn, np.zeros(y_Fn.shape))
 
 Sp = np.zeros([number_of_cells_height, number_of_cells_width])
-Sp[:, 0] += -1 * (2 * np.copy(x_DA[:, 0]) + np.copy(x_Flmax[:, 0]))  # left
-Sp[:, -1] += -1 * (2 * np.copy(x_DA[:, -1]) + np.copy(x_Frmax[:, -1]))  # right
-Sp[0, :] += -1 * (2 * np.copy(y_DA[0, :]) + np.copy(y_Fbmax[0, :]))  # bottom
-Sp[-1, :] += -1 * (2 * np.copy(y_DA[-1, :]) + np.copy(y_Ftmax[-1, :]))  # top
+Sp[:, 0] += -1 * (2 * np.copy(x_DA[:, 0]) + np.copy(x_Fwmax[:, 0]))  # west
+Sp[:, -1] += -1 * (2 * np.copy(x_DA[:, -1]) + np.copy(x_Femax[:, -1]))  # east
+Sp[0, :] += -1 * (2 * np.copy(y_DA[0, :]) + np.copy(y_Fsmax[0, :]))  # south
+Sp[-1, :] += -1 * (2 * np.copy(y_DA[-1, :]) + np.copy(y_Fnmax[-1, :]))  # north
 
 Su = heat_source_per_volume * volume_of_cell
-Su[:, 0] += temp_left * (2 * np.copy(x_DA[:, 0]) + np.copy(x_Flmax[:, 0]))  # left
-Su[:, -1] += temp_right * (2 * np.copy(x_DA[:, -1]) + np.copy(x_Frmax[:, -1]))  # right
-Su[0, :] += temp_bottom * (2 * np.copy(y_DA[0, :]) + np.copy(y_Fbmax[0, :]))  # bottom
-Su[-1, :] += temp_top * (2 * np.copy(y_DA[-1, :]) + np.copy(y_Ftmax[-1, :]))  # top
+Su[:, 0] += temp_west * (2 * np.copy(x_DA[:, 0]) + np.copy(x_Fwmax[:, 0]))  # west
+Su[:, -1] += temp_east * (2 * np.copy(x_DA[:, -1]) + np.copy(x_Femax[:, -1]))  # east
+Su[0, :] += temp_south * (2 * np.copy(y_DA[0, :]) + np.copy(y_Fsmax[0, :]))  # south
+Su[-1, :] += temp_north * (2 * np.copy(y_DA[-1, :]) + np.copy(y_Fnmax[-1, :]))  # north
 
-aL = np.copy(x_DA[:, 0:-1]) + np.copy(x_Flmax)
-aL[:, 0] = np.zeros(aL[:, 0].shape)
+mW = np.copy(x_DA[:, 0:-1]) + np.copy(x_Fwmax)
+mW[:, 0] = np.zeros(mW[:, 0].shape)
 
-aR = np.copy(x_DA[:, 1:]) + np.copy(x_Frmax)
-aR[:, -1] = np.zeros(aR[:, -1].shape)
+mE = np.copy(x_DA[:, 1:]) + np.copy(x_Femax)
+mE[:, -1] = np.zeros(mE[:, -1].shape)
 
-aB = np.copy(y_DA[0:-1, :]) + np.copy(y_Fbmax)
-aB[0, :] = np.zeros(aB[0, :].shape)
+mS = np.copy(y_DA[0:-1, :]) + np.copy(y_Fsmax)
+mS[0, :] = np.zeros(mS[0, :].shape)
 
-aT = np.copy(y_DA[1:, :]) + np.copy(y_Ftmax)
-aT[-1, :] = np.zeros(aT[-1, :].shape)
+mN = np.copy(y_DA[1:, :]) + np.copy(y_Fnmax)
+mN[-1, :] = np.zeros(mN[-1, :].shape)
 
-aP = np.copy(aL) + np.copy(aR) + np.copy(aB) + np.copy(aT) +\
-        (np.copy(x_Fr) - np.copy(x_Fl)) + (np.copy(y_Ft) - np.copy(y_Fb)) - np.copy(Sp)
+mP = np.copy(mW) + np.copy(mE) + np.copy(mS) + np.copy(mN) + \
+     (np.copy(x_Fe) - np.copy(x_Fw)) + (np.copy(y_Fn) - np.copy(y_Fs)) - np.copy(Sp)
 
 
 # generate matrix
 
-A = np.zeros([number_of_cells_width * number_of_cells_height, number_of_cells_width * number_of_cells_height])
-B = np.zeros(number_of_cells_width * number_of_cells_height)
+M = np.zeros([number_of_cells_width * number_of_cells_height, number_of_cells_width * number_of_cells_height])
+s = np.zeros(number_of_cells_width * number_of_cells_height)
 
 for j in range(number_of_cells_height):
     for i in range(number_of_cells_width):
         index = cell_to_index(i, j)
 
-        A[index, index] = aP[j, i]
-        B[index] = Su[j, i]
+        M[index, index] = mP[j, i]
+        s[index] = Su[j, i]
 
         if i != 0:
-            left_index = cell_to_index(i - 1, j)
-            A[index][left_index] = -aL[j, i]
+            west_index = cell_to_index(i - 1, j)
+            M[index][west_index] = -mW[j, i]
 
         if i != (number_of_cells_width - 1):
-            right_index = cell_to_index(i + 1, j)
-            A[index][right_index] = -aR[j, i]
+            east_index = cell_to_index(i + 1, j)
+            M[index][east_index] = -mE[j, i]
 
         if j != 0:
-            bottom_index = cell_to_index(i, j - 1)
-            A[index][bottom_index] = -aB[j, i]
+            south_index = cell_to_index(i, j - 1)
+            M[index][south_index] = -mS[j, i]
 
         if j != (number_of_cells_height - 1):
-            top_index = cell_to_index(i, j + 1)
-            A[index][top_index] = -aT[j, i]
+            north_index = cell_to_index(i, j + 1)
+            M[index][north_index] = -mN[j, i]
 
-T = np.linalg.solve(A, B).reshape([number_of_cells_height, number_of_cells_width])
+t = np.linalg.solve(M, s).reshape([number_of_cells_height, number_of_cells_width])
 
 
 # plot
 
 fig, ax = plt.subplots()
-im = ax.pcolormesh(x_faces_tmp, y_faces_tmp, T)
+im = ax.pcolormesh(x_faces_tmp, y_faces_tmp, t)
 fig.colorbar(im)
 
 ax.axis('tight')
